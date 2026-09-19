@@ -1,0 +1,36 @@
+/**
+ * Canonical event vocabulary for evara_events.event_type.
+ * Keep this list as the single source of truth — application code should
+ * never write a raw string event_type outside this file, or evara_events
+ * silently accumulates near-duplicate event names over time.
+ */
+export const EventType = {
+  CUSTOMER_CREATED: "CUSTOMER_CREATED",
+  CUSTOMER_INACTIVE: "CUSTOMER_INACTIVE",
+  CUSTOMER_REACTIVATED: "CUSTOMER_REACTIVATED",
+
+  PRODUCT_VIEWED: "PRODUCT_VIEWED",
+  PRODUCT_ADDED_TO_CART: "PRODUCT_ADDED_TO_CART",
+  PRODUCT_LOW_STOCK: "PRODUCT_LOW_STOCK",
+  PRODUCT_OUT_OF_STOCK: "PRODUCT_OUT_OF_STOCK",
+
+  CART_ABANDONED: "CART_ABANDONED",
+
+  ORDER_CREATED: "ORDER_CREATED",
+  ORDER_PAID: "ORDER_PAID",
+  ORDER_FAILED: "ORDER_FAILED",
+  ORDER_CANCELLED: "ORDER_CANCELLED",
+
+  PAYMENT_RECEIVED: "PAYMENT_RECEIVED",
+  PAYMENT_FAILED: "PAYMENT_FAILED",
+
+  SHIPPING_STATUS_CHANGED: "SHIPPING_STATUS_CHANGED",
+
+  CUSTOMER_MESSAGE_RECEIVED: "CUSTOMER_MESSAGE_RECEIVED",
+  SUPPORT_REQUEST_CREATED: "SUPPORT_REQUEST_CREATED",
+
+  RISK_DETECTED: "RISK_DETECTED",
+  ANOMALY_DETECTED: "ANOMALY_DETECTED",
+} as const;
+
+export type EventTypeValue = (typeof EventType)[keyof typeof EventType];

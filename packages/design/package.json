@@ -1,0 +1,16 @@
+{
+  "name": "@evara-lux/design",
+  "version": "1.0.0",
+  "description": "Design DNA, Aura system, and experience engines for EVARA-LUX.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "verify": "npm run build && node scripts/verify.mjs",
+    "site:sync": "npm run build && node scripts/sync-site.mjs",
+    "check": "npm run verify && npm run site:sync"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

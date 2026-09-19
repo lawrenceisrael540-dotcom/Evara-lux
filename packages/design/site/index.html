@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EVARA-LUX design system</title>
+<meta name="description" content="The Design DNA, Aura system and experience engines behind EVARA-LUX.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+@property --aura-surface        { syntax: "<color>"; inherits: true; initial-value: #0D0F1A; }
+@property --aura-surface-raised { syntax: "<color>"; inherits: true; initial-value: #171B2C; }
+@property --aura-ink            { syntax: "<color>"; inherits: true; initial-value: #EDE9E1; }
+@property --aura-ink-muted      { syntax: "<color>"; inherits: true; initial-value: #A6ACC2; }
+@property --aura-accent         { syntax: "<color>"; inherits: true; initial-value: #CDB784; }
+@property --aura-signal         { syntax: "<color>"; inherits: true; initial-value: #82AAFF; }
+
+:root {
+  --aura-surface: #0D0F1A; --aura-surface-raised: #171B2C; --aura-ink: #EDE9E1;
+  --aura-ink-muted: #A6ACC2; --aura-accent: #CDB784; --aura-signal: #82AAFF;
+  --aura-intensity: .35; --tempo: 1.1s;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --text: "Newsreader", Georgia, "Times New Roman", serif;
+  --rail: 17rem;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--aura-surface); color: var(--aura-ink);
+  font: 400 1.0625rem/1.55 var(--text);
+  transition: background-color .7s, color .7s;
+}
+a { color: var(--aura-accent); text-underline-offset: .2em; }
+:focus-visible { outline: 2px solid var(--aura-accent); outline-offset: 3px; border-radius: 4px; }
+.skip { position: absolute; left: -999px; top: .5rem; background: var(--aura-accent); color: var(--aura-surface); padding: .75rem 1rem; z-index: 50; border-radius: 4px; }
+.skip:focus { left: .5rem; }
+
+/* ---- the atmosphere: the one memorable thing ---- */
+.field { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.field i {
+  position: absolute; border-radius: 50%; filter: blur(70px);
+  opacity: calc(var(--aura-intensity) * .75);
+  transition: opacity .7s;
+  will-change: transform;
+}
+.field i:nth-child(1) { width: 62vmax; height: 62vmax; left: 8vw; top: -22vmax; background: radial-gradient(circle, var(--aura-accent), transparent 66%); animation: drift-a calc(var(--tempo) * 22) ease-in-out infinite alternate; }
+.field i:nth-child(2) { width: 46vmax; height: 46vmax; right: -12vmax; bottom: -16vmax; background: radial-gradient(circle, var(--aura-signal), transparent 66%); animation: drift-b calc(var(--tempo) * 28) ease-in-out infinite alternate; }
+.field::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, var(--aura-surface) 96%); }
+@keyframes drift-a { to { transform: translate3d(9vw, 8vh, 0) scale(1.12); } }
+@keyframes drift-b { to { transform: translate3d(-10vw, -7vh, 0) scale(.92); } }
+
+/* ---- layout: rail + asymmetric main ---- */
+.shell { position: relative; z-index: 1; display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); }
+.rail {
+  position: sticky; top: 0; height: 100vh; padding: 2rem 1.25rem 2rem 1.75rem;
+  display: flex; flex-direction: column; gap: 1.5rem;
+  border-right: 1px solid color-mix(in srgb, var(--aura-ink) 12%, transparent);
+}
+.brand { font: 800 1.35rem/1 var(--display); letter-spacing: -.02em; margin: 0; }
+.brand small { display: block; margin-top: .4rem; font: 400 .9rem/1.3 var(--text); color: var(--aura-ink-muted); letter-spacing: 0; }
+.dial { display: flex; flex-direction: column; gap: .125rem; margin: 0; padding: 0; border: 0; }
+.dial legend { font: 500 .9rem/1.3 var(--text); color: var(--aura-ink-muted); padding: 0 0 .5rem; }
+.dial button {
+  all: unset; white-space: nowrap; box-sizing: border-box; cursor: pointer; min-height: 2.75rem;
+  display: flex; align-items: center; gap: .75rem; padding: 0 .75rem; border-radius: 10px;
+  font: 500 .98rem/1 var(--display); color: var(--aura-ink-muted);
+  transition: background-color .3s, color .3s;
+}
+.dial button::before { content: ""; width: .7rem; height: .7rem; border-radius: 50%; background: var(--dot); box-shadow: 0 0 0 2px var(--aura-surface), 0 0 0 3px color-mix(in srgb, var(--dot) 55%, transparent); flex: none; }
+.dial button:hover { color: var(--aura-ink); background: color-mix(in srgb, var(--aura-ink) 6%, transparent); }
+.dial button[aria-checked="true"] { color: var(--aura-ink); background: var(--aura-surface-raised); }
+.dial button:focus-visible { outline: 2px solid var(--aura-accent); outline-offset: 2px; }
+.rail nav { margin-top: auto; display: grid; gap: .25rem; }
+.rail nav a { display: flex; align-items: center; min-height: 2.75rem; padding: 0 .75rem; color: var(--aura-ink-muted); text-decoration: none; font: 500 .95rem var(--display); border-radius: 10px; }
+.rail nav a:hover { color: var(--aura-ink); }
+
+main { padding: 0 clamp(1.25rem, 5vw, 5rem) 6rem; max-width: 84rem; }
+section { padding-top: clamp(4rem, 9vw, 8rem); }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; }
+h1 { font-weight: 800; letter-spacing: -.035em; line-height: 1.02; font-size: clamp(2.4rem, 4.6vw + .5rem, 5.2rem); max-width: 15ch; font-variation-settings: "opsz" 96; }
+h2 { font-weight: 700; letter-spacing: -.025em; line-height: 1.08; font-size: clamp(1.8rem, 3vw + .6rem, 3.05rem); max-width: 18ch; }
+h3 { font-weight: 700; font-size: 1.2rem; letter-spacing: -.01em; }
+p { max-width: 62ch; margin: 1rem 0 0; }
+.lede { font-size: 1.28rem; color: var(--aura-ink-muted); max-width: 46ch; margin-top: 1.75rem; }
+
+/* hero readout */
+.hero { padding-top: clamp(3rem, 8vw, 7rem); min-height: 100vh; display: flex; flex-direction: column; }
+.readout { margin-top: auto; padding-top: 3.5rem; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 2.5rem 4rem; align-items: end; }
+.readout h2 { font-size: clamp(1.6rem, 2.4vw + .6rem, 2.6rem); }
+.readout .feel { color: var(--aura-signal); font: 500 1.05rem var(--display); margin-top: .75rem; }
+.meters { display: grid; gap: .9rem; margin: 0; padding: 0; list-style: none; }
+.meters li { display: grid; grid-template-columns: 9.5rem 1fr 3rem; align-items: center; gap: .9rem; font: 500 .95rem var(--display); color: var(--aura-ink-muted); }
+.meters .bar { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--aura-ink) 14%, transparent); overflow: hidden; }
+.meters .bar b { display: block; height: 100%; width: var(--v); background: var(--aura-accent); border-radius: 3px; transition: width .7s cubic-bezier(.3,0,0,1); }
+.meters output { text-align: right; color: var(--aura-ink); font-variant-numeric: tabular-nums; }
+
+/* locked vs variable: asymmetric, two voices */
+.split { display: grid; grid-template-columns: 5fr 7fr; gap: 3rem 5rem; margin-top: 3rem; align-items: start; }
+.locked { border-top: 2px solid var(--aura-ink); padding-top: 1.25rem; }
+.varies { border-top: 2px solid var(--aura-accent); padding-top: 1.25rem; }
+.split ul { margin: 1rem 0 0; padding: 0; list-style: none; display: grid; gap: .55rem; }
+.split li { padding-left: 1.1rem; position: relative; max-width: 52ch; }
+.split li::before { content: ""; position: absolute; left: 0; top: .72em; width: .45rem; height: 2px; background: currentColor; opacity: .6; }
+.varies { font-size: 1.12rem; }
+
+/* contrast proof */
+.tablewrap { margin-top: 2.5rem; overflow-x: auto; border-radius: 14px; background: var(--aura-surface-raised); transition: background-color .7s; }
+table { border-collapse: collapse; width: 100%; min-width: 40rem; font: 500 .98rem var(--display); }
+caption { text-align: left; padding: 1.25rem 1.5rem .25rem; color: var(--aura-ink-muted); font: 400 1rem var(--text); }
+th, td { text-align: left; padding: .85rem 1.5rem; }
+thead th { color: var(--aura-ink-muted); font-weight: 500; }
+tbody tr + tr td, tbody tr + tr th { border-top: 1px solid color-mix(in srgb, var(--aura-ink) 10%, transparent); }
+tbody th { font-weight: 700; display: flex; align-items: center; gap: .7rem; }
+tbody th::before { content: ""; width: .65rem; height: .65rem; border-radius: 50%; background: var(--dot); }
+td { font-variant-numeric: tabular-nums; }
+tr.current { background: color-mix(in srgb, var(--aura-accent) 12%, transparent); }
+.pass { color: var(--aura-signal); }
+
+/* motion tempos */
+.tempos { margin-top: 2.5rem; display: grid; gap: 1.25rem; }
+.tempo { display: grid; grid-template-columns: 8rem 1fr 9rem; align-items: center; gap: 1.25rem; }
+.tempo h3 { font-size: 1.05rem; }
+.track { height: 2.75rem; border-radius: 999px; background: var(--aura-surface-raised); position: relative; overflow: hidden; }
+.track i { position: absolute; top: 50%; left: .6rem; width: 1.1rem; height: 1.1rem; margin-top: -.55rem; border-radius: 50%; background: var(--aura-accent); animation: sweep var(--d) var(--e) infinite alternate; }
+@keyframes sweep { from { left: .6rem; } to { left: calc(100% - 1.7rem); } }
+.tempo small { color: var(--aura-ink-muted); font: 400 .95rem var(--text); }
+
+/* roadmap: a real sequence, so numbered */
+.phases { list-style: none; margin: 3rem 0 0; padding: 0; counter-reset: p; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+.phases li { counter-increment: p; padding: 1.5rem 1.5rem 0 0; border-top: 2px solid color-mix(in srgb, var(--aura-ink) 22%, transparent); position: relative; }
+.phases li::before { content: counter(p); position: absolute; top: -1.1rem; left: 0; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: var(--aura-surface); border: 2px solid var(--aura-accent); display: grid; place-items: center; font: 700 .95rem var(--display); }
+.phases h3 { margin-top: 1rem; }
+.phases p { font-size: .98rem; color: var(--aura-ink-muted); margin-top: .5rem; }
+.gate { margin-top: 2.5rem; padding: 1.25rem 1.5rem; border-radius: 14px; background: var(--aura-surface-raised); max-width: 52rem; }
+.gate strong { font-family: var(--display); }
+
+.docs { margin: 2.5rem 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 4rem; }
+.docs li { padding: 1.1rem 0; border-top: 1px solid color-mix(in srgb, var(--aura-ink) 14%, transparent); }
+.docs a { font: 700 1.15rem var(--display); }
+.docs span { display: block; color: var(--aura-ink-muted); max-width: 44ch; }
+footer { margin-top: 7rem; color: var(--aura-ink-muted); font-size: .95rem; }
+
+/* compact: a different composition, not a re-stack */
+@media (max-width: 62rem) {
+  .shell { display: block; }
+  .rail { position: sticky; top: 0; z-index: 5; height: auto; flex-direction: row; align-items: center; padding: .5rem 1rem; gap: 1rem; border-right: 0; border-bottom: 1px solid color-mix(in srgb, var(--aura-ink) 12%, transparent); background: color-mix(in srgb, var(--aura-surface) 92%, transparent); backdrop-filter: blur(10px); }
+  .brand small, .rail nav, .dial legend { display: none; }
+  .dial { flex-direction: row; min-width: 0; overflow-x: auto; scrollbar-width: none; gap: .25rem; flex: 1; }
+  .dial button { white-space: nowrap; }
+  .hero { min-height: calc(100vh - 3.5rem); }
+  .readout, .split { grid-template-columns: 1fr; }
+  .tempo { grid-template-columns: 1fr; gap: .5rem; }
+  .phases { grid-template-columns: 1fr; gap: 2rem; }
+  .phases li { border-top: 0; border-left: 2px solid color-mix(in srgb, var(--aura-ink) 22%, transparent); padding: 0 0 0 1.75rem; }
+  .phases li::before { top: 0; left: -1.1rem; }
+  .docs { grid-template-columns: 1fr; }
+  .meters li { grid-template-columns: 7.5rem 1fr 2.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .field i, .track i { animation: none; }
+  *, *::before, *::after { transition-duration: .12s !important; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="field" aria-hidden="true"><i></i><i></i></div>
+
+<div class="shell">
+  <aside class="rail">
+    <p class="brand">EVARA-LUX<small>Design system</small></p>
+    <fieldset class="dial" id="dial" role="radiogroup" aria-label="Choose an aura to preview">
+      <legend>Preview an aura</legend>
+    </fieldset>
+    <nav aria-label="Sections">
+      <a href="#dna">Design DNA</a>
+      <a href="#access">Accessibility</a>
+      <a href="#motion">Motion</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#docs">Documents</a>
+    </nav>
+  </aside>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="title">
+      <h1 id="title">Every page is different. All of it is EVARA-LUX.</h1>
+      <p class="lede">One set of locked foundations, nine atmospheres. Choose an aura and this whole page becomes that environment, using the same tokens the product will ship.</p>
+
+      <div class="readout" aria-live="polite">
+        <div>
+          <h2 id="r-name"></h2>
+          <p id="r-meaning"></p>
+          <p class="feel" id="r-feel"></p>
+        </div>
+        <ul class="meters" id="meters"></ul>
+      </div>
+    </section>
+
+    <section id="dna" aria-labelledby="dna-h">
+      <h2 id="dna-h">Same DNA, different personality</h2>
+      <p>The rule that keeps this from turning into chaos: foundations are locked, and personality is a small set of named dials.</p>
+      <div class="split">
+        <div class="locked">
+          <h3>Locked for every page</h3>
+          <ul>
+            <li>Spacing on a 4px grid and a 1.25 modular type scale</li>
+            <li>Focus ring, 44px touch targets, contrast floors</li>
+            <li>Navigation logic and component behaviour</li>
+            <li>Reduced motion, performance budgets, security</li>
+          </ul>
+        </div>
+        <div class="varies">
+          <h3>Allowed to change with the aura</h3>
+          <ul>
+            <li>Palette, lighting, and how much atmosphere fills the space</li>
+            <li>Motion tempo, from slow and weighty to kinetic</li>
+            <li>Density, depth, typographic drama, image treatment</li>
+            <li>Composition: a separate layout for compact and expanded screens</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="access" aria-labelledby="a-h">
+      <h2 id="a-h">Accessible in every aura, checked by code</h2>
+      <p>Each palette is validated against WCAG contrast before it can ship. These ratios are computed live from the same palettes.</p>
+      <div class="tablewrap">
+        <table>
+          <caption>Contrast ratio against each aura's surface. Floors: body text 7, secondary text 4.5, accent 4.5.</caption>
+          <thead><tr><th scope="col">Aura</th><th scope="col">Body text</th><th scope="col">Secondary</th><th scope="col">Accent</th><th scope="col">Signal</th></tr></thead>
+          <tbody id="contrast"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="motion" aria-labelledby="m-h">
+      <h2 id="m-h">Motion that matches the mood</h2>
+      <p>Four tempos, each with its own timing and easing. When a visitor asks for reduced motion, every tempo collapses to a brief fade.</p>
+      <div class="tempos" id="tempos"></div>
+    </section>
+
+    <section id="roadmap" aria-labelledby="rm-h">
+      <h2 id="rm-h">Build it in four phases</h2>
+      <ol class="phases">
+        <li><h3>Audit</h3><p>Map every page and catalog, and mark where the interface repeats itself.</p></li>
+        <li><h3>Foundation</h3><p>Ship tokens, auras, the motion system, and the configuration schema with CI checks.</p></li>
+        <li><h3>Pilot</h3><p>Redesign two contrasting pages end to end. Measure performance and accessibility.</p></li>
+        <li><h3>Rollout</h3><p>Move remaining pages and catalogs onto the engines, one world at a time.</p></li>
+      </ol>
+      <div class="gate"><strong>One gate before any of it:</strong> phases 2 to 4 start only after the current security remediation is verified. Phase 1 is read-only and can begin now.</div>
+    </section>
+
+    <section id="docs" aria-labelledby="d-h">
+      <h2 id="d-h">Read the specification</h2>
+      <ul class="docs">
+        <li><a href="../docs/01-design-dna.md">Design DNA</a><span>Locked tokens, experiential tokens, and the rules between them.</span></li>
+        <li><a href="../docs/02-aura-system.md">Aura system</a><span>From name and meaning to palette, motion, and layout.</span></li>
+        <li><a href="../docs/03-experience-engines.md">Experience engines</a><span>Page and catalog configuration, composition, and validation.</span></li>
+        <li><a href="../docs/04-motion-language.md">Motion language</a><span>Tempos, purposes, and the reduced-motion contract.</span></li>
+        <li><a href="../docs/05-quality-gates.md">Quality gates</a><span>Budgets, accessibility, and the final design test.</span></li>
+        <li><a href="../docs/06-roadmap.md">Roadmap</a><span>Phases, acceptance criteria, and definition of done.</span></li>
+      </ul>
+    </section>
+
+    <footer>The original creative directive is kept unchanged in <a href="../docs/ORIGINAL_DIRECTIVE.md">docs/ORIGINAL_DIRECTIVE.md</a>.</footer>
+  </main>
+</div>
+
+<script>
+/*DATA_START*/
+const DATA = {"auras":[{"id":"obsidian-command","codename":"Obsidian Command","domain":"Executive","meaning":"Quiet power. A room where decisions are made without raising a voice.","feel":["commanding","strategic","restrained"],"palette":{"surface":"#0D0F1A","surfaceRaised":"#171B2C","ink":"#EDE9E1","inkMuted":"#A6ACC2","accent":"#CDB784","signal":"#82AAFF"},"tokens":{"auraIntensity":0.35,"motionTempo":"slow","visualDensity":2,"depthLevel":2,"lighting":"directional","typographicDrama":0.7,"imageTreatment":"graded","videoIntensity":0.2,"interactionDensity":2}},{"id":"midnight-ledger","codename":"Midnight Ledger","domain":"Finance","meaning":"Precision after hours. Every figure accounted for, nothing ornamental.","feel":["precise","controlled","trustworthy"],"palette":{"surface":"#08121A","surfaceRaised":"#10202D","ink":"#E6EEF2","inkMuted":"#93A8B6","accent":"#5FD0C0","signal":"#E8C26A"},"tokens":{"auraIntensity":0.25,"motionTempo":"measured","visualDensity":4,"depthLevel":1,"lighting":"diffuse","typographicDrama":0.3,"imageTreatment":"monochrome","videoIntensity":0,"interactionDensity":4}},{"id":"velvet-product","codename":"Velvet Product","domain":"Product","meaning":"Desire, slowly revealed. The object is the light source.","feel":["desirable","cinematic","tactile"],"palette":{"surface":"#17100F","surfaceRaised":"#251A18","ink":"#F4ECE6","inkMuted":"#BCAAA0","accent":"#E8A9AD","signal":"#F1D9A0"},"tokens":{"auraIntensity":0.7,"motionTempo":"slow","visualDensity":2,"depthLevel":4,"lighting":"spot","typographicDrama":0.9,"imageTreatment":"graded","videoIntensity":0.8,"interactionDensity":3}},{"id":"signal-marketing","codename":"Signal Marketing","domain":"Marketing","meaning":"A campaign in motion. Energy that points somewhere.","feel":["energetic","kinetic","creative"],"palette":{"surface":"#130C22","surfaceRaised":"#21153A","ink":"#F3EEFF","inkMuted":"#B4A8D6","accent":"#FF78B0","signal":"#7CF0D0"},"tokens":{"auraIntensity":0.85,"motionTempo":"kinetic","visualDensity":3,"depthLevel":3,"lighting":"directional","typographicDrama":0.85,"imageTreatment":"duotone","videoIntensity":0.6,"interactionDensity":4}},{"id":"orbit-customer","codename":"Orbit Customer","domain":"Customer","meaning":"A person, remembered. Warm light, a history that follows them.","feel":["human","warm","personal"],"palette":{"surface":"#1A1512","surfaceRaised":"#282019","ink":"#F6EFE6","inkMuted":"#BFAE9C","accent":"#F2B57F","signal":"#A2CDA6"},"tokens":{"auraIntensity":0.5,"motionTempo":"measured","visualDensity":2,"depthLevel":2,"lighting":"ambient","typographicDrama":0.5,"imageTreatment":"natural","videoIntensity":0.3,"interactionDensity":3}},{"id":"flowline-operations","codename":"Flowline Operations","domain":"Operations","meaning":"Systems working together. Motion that never quite stops.","feel":["mechanical","continuous","systematic"],"palette":{"surface":"#0A1613","surfaceRaised":"#12251F","ink":"#E8F2EE","inkMuted":"#98B4AB","accent":"#7BD8B0","signal":"#F2C46B"},"tokens":{"auraIntensity":0.4,"motionTempo":"brisk","visualDensity":4,"depthLevel":2,"lighting":"diffuse","typographicDrama":0.3,"imageTreatment":"monochrome","videoIntensity":0.1,"interactionDensity":5}},{"id":"neural-atlas","codename":"Neural Atlas","domain":"Analytics","meaning":"Information becoming intelligence. Depth you can read.","feel":["clear","layered","revealing"],"palette":{"surface":"#0A0E1F","surfaceRaised":"#131A38","ink":"#E9ECFA","inkMuted":"#9CA6D2","accent":"#8FA6FF","signal":"#FFB86B"},"tokens":{"auraIntensity":0.55,"motionTempo":"measured","visualDensity":4,"depthLevel":3,"lighting":"ambient","typographicDrama":0.4,"imageTreatment":"duotone","videoIntensity":0,"interactionDensity":4}},{"id":"sentinel-security","codename":"Sentinel Security","domain":"Security","meaning":"Defensive and minimal. Nothing on screen that is not a signal.","feel":["defensive","minimal","alert"],"palette":{"surface":"#0A0A0C","surfaceRaised":"#151518","ink":"#EFEFF1","inkMuted":"#9E9EA9","accent":"#F2685E","signal":"#E8E8EA"},"tokens":{"auraIntensity":0.15,"motionTempo":"brisk","visualDensity":3,"depthLevel":0,"lighting":"spot","typographicDrama":0.2,"imageTreatment":"monochrome","videoIntensity":0,"interactionDensity":3}},{"id":"chorus-agents","codename":"Chorus Agents","domain":"Agents","meaning":"Living intelligence with distinct voices, each visibly at work.","feel":["alive","specialised","dynamic"],"palette":{"surface":"#0F1220","surfaceRaised":"#1A1F36","ink":"#EEF0FA","inkMuted":"#A4AAD0","accent":"#BBA3FF","signal":"#70E2FF"},"tokens":{"auraIntensity":0.65,"motionTempo":"brisk","visualDensity":3,"depthLevel":3,"lighting":"ambient","typographicDrama":0.6,"imageTreatment":"graded","videoIntensity":0.3,"interactionDensity":4}}],"motion":{"slow":{"tempo":"slow","duration":{"micro":160,"short":320,"medium":640,"long":1100},"easing":"cubic-bezier(0.3, 0, 0, 1)","staggerMs":90,"purpose":"Weight and certainty. Change arrives deliberately."},"measured":{"tempo":"measured","duration":{"micro":120,"short":220,"medium":420,"long":720},"easing":"cubic-bezier(0.2, 0, 0, 1)","staggerMs":60,"purpose":"Clarity. Motion explains what changed and stops."},"brisk":{"tempo":"brisk","duration":{"micro":90,"short":160,"medium":280,"long":480},"easing":"cubic-bezier(0.4, 0, 0.6, 1)","staggerMs":35,"purpose":"Responsiveness. The system keeps up with the operator."},"kinetic":{"tempo":"kinetic","duration":{"micro":80,"short":140,"medium":240,"long":400},"easing":"cubic-bezier(0.4, 0, 0.6, 1)","staggerMs":24,"purpose":"Momentum. Energy that leads the eye toward an action."}},"budgets":{"lcpMs":2500,"inpMs":200,"cls":0.1,"routeJsKbGzip":170,"heroVideoMobileKb":2500,"maxConcurrentAnimations":6}};
+/*DATA_END*/
+
+const $ = (s) => document.querySelector(s);
+const hex = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+const lum = (h) => { const [r, g, b] = hex(h).map((v) => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * r + .7152 * g + .0722 * b; };
+const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
+const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+const tempoScale = { slow: 1.6, measured: 1.1, brisk: .7, kinetic: .4 };
+const meterSpec = [
+  ["Aura intensity", (t) => t.auraIntensity, (v) => Math.round(v * 100) + "%"],
+  ["Typographic drama", (t) => t.typographicDrama, (v) => Math.round(v * 100) + "%"],
+  ["Visual density", (t) => t.visualDensity / 5, (v) => Math.round(v * 5) + "/5"],
+  ["Depth", (t) => t.depthLevel / 4, (v) => Math.round(v * 4) + "/4"],
+  ["Interaction density", (t) => t.interactionDensity / 5, (v) => Math.round(v * 5) + "/5"],
+  ["Video intensity", (t) => t.videoIntensity, (v) => Math.round(v * 100) + "%"],
+];
+
+const dial = $("#dial");
+DATA.auras.forEach((a, i) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.setAttribute("role", "radio"); b.dataset.id = a.id;
+  b.style.setProperty("--dot", a.palette.accent);
+  b.innerHTML = `<span>${a.codename}</span>`;
+  b.addEventListener("click", () => select(a.id));
+  dial.appendChild(b);
+});
+dial.addEventListener("keydown", (e) => {
+  const keys = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
+  if (!(e.key in keys)) return;
+  e.preventDefault();
+  const ids = DATA.auras.map((a) => a.id);
+  const cur = ids.indexOf(dial.querySelector('[aria-checked="true"]').dataset.id);
+  const next = (cur + keys[e.key] + ids.length) % ids.length;
+  select(ids[next]); dial.querySelector(`[data-id="${ids[next]}"]`).focus();
+});
+
+const meters = $("#meters");
+const meterEls = meterSpec.map(([label]) => {
+  const li = document.createElement("li");
+  li.innerHTML = `<span>${label}</span><span class="bar"><b></b></span><output></output>`;
+  meters.appendChild(li); return li;
+});
+
+const tbody = $("#contrast");
+DATA.auras.forEach((a) => {
+  const p = a.palette, tr = document.createElement("tr");
+  tr.dataset.id = a.id;
+  const cell = (v, min) => `<td class="${v >= min ? "pass" : ""}">${v.toFixed(1)}</td>`;
+  tr.innerHTML = `<th scope="row" style="--dot:${p.accent}">${a.codename}</th>` +
+    cell(ratio(p.ink, p.surface), 7) + cell(ratio(p.inkMuted, p.surface), 4.5) +
+    cell(ratio(p.accent, p.surface), 4.5) + cell(ratio(p.signal, p.surface), 4.5);
+  tbody.appendChild(tr);
+});
+
+const tempos = $("#tempos");
+Object.values(DATA.motion).forEach((m) => {
+  const row = document.createElement("div");
+  row.className = "tempo";
+  const d = m.duration.long;
+  row.innerHTML = `<h3>${m.tempo[0].toUpperCase() + m.tempo.slice(1)}</h3>
+    <div class="track" aria-hidden="true"><i style="--d:${d * 2}ms;--e:${m.easing}"></i></div>
+    <small>${m.duration.medium} ms medium</small>`;
+  tempos.appendChild(row);
+});
+
+function select(id) {
+  const a = DATA.auras.find((x) => x.id === id) || DATA.auras[0];
+  const p = a.palette, root = document.documentElement.style;
+  root.setProperty("--aura-surface", p.surface);
+  root.setProperty("--aura-surface-raised", p.surfaceRaised);
+  root.setProperty("--aura-ink", p.ink);
+  root.setProperty("--aura-ink-muted", p.inkMuted);
+  root.setProperty("--aura-accent", p.accent);
+  root.setProperty("--aura-signal", p.signal);
+  root.setProperty("--aura-intensity", a.tokens.auraIntensity);
+  root.setProperty("--tempo", (tempoScale[a.tokens.motionTempo] || 1) + "s");
+  dial.querySelectorAll("button").forEach((b) => {
+    const on = b.dataset.id === a.id;
+    b.setAttribute("aria-checked", on); b.tabIndex = on ? 0 : -1;
+  });
+  $("#r-name").textContent = a.codename + " for " + a.domain.toLowerCase();
+  $("#r-meaning").textContent = a.meaning;
+  $("#r-feel").textContent = a.feel.join(", ") + ". Motion is " + a.tokens.motionTempo + ".";
+  meterSpec.forEach(([, get, fmt], i) => {
+    const v = get(a.tokens);
+    meterEls[i].querySelector("b").style.setProperty("--v", (v * 100) + "%");
+    meterEls[i].querySelector("output").textContent = fmt(v);
+  });
+  const sel = dial.querySelector('[aria-checked="true"]');
+  if (dial.scrollWidth > dial.clientWidth) dial.scrollLeft = sel.offsetLeft - (dial.clientWidth - sel.offsetWidth) / 2;
+  tbody.querySelectorAll("tr").forEach((tr) => tr.classList.toggle("current", tr.dataset.id === a.id));
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", p.surface);
+  history.replaceState(null, "", "#aura=" + a.id);
+}
+
+const m = location.hash.match(/aura=([\w-]+)/);
+select(m ? m[1] : DATA.auras[0].id);
+</script>
+</body>
+</html>
