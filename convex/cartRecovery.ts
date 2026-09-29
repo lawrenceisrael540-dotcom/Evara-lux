@@ -1,0 +1,4 @@
+import { internalMutation } from "./_generated/server"
+import { internal } from "./_generated/api"
+import { v } from "convex/values"
+export const recoverStale=internalMutation({args:{},returns:v.number(),handler:async(ctx)=>{const cutoff=Date.now()-2*60*60*1000;const carts=await ctx.db .query("carts").withIndex("by_status",q=>q.eq("status","active")).take(500);let count=0;for(const cart of carts){if(cart._creationTime>cutoff)continue;const items=await ctx.db.query("cartItems").withIndex("by_cart",q=>q.eq("cartId",cart._id)).take(50);if(!items.length)continue;await ctx.db.patch(cart._id,{status:"abandoned"});await ctx.scheduler.runAfter(0,internal.notifications.createInternal,{userId:cart.userId,kind:"promotion",title:"Your EVARA selection is waiting",body:"You left items in your cart. Your selection is still available while stock lasts.",actionUrl:"/checkout",priority:"normal"});count++}return count}})
