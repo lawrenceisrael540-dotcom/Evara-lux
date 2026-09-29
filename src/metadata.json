@@ -1,0 +1,46 @@
+{
+  "/": {
+    "title": "EVARA-LUX — More Than What You Buy.",
+    "description": "EVARA-LUX is a premium, AI-native commerce experience — curated products chosen for how they make you feel."
+  },
+  "/login": {
+    "title": "Sign In — EVARA-LUX",
+    "description": "Sign in or create your EVARA-LUX account with a one-time email code."
+  },
+  "/signup": {
+    "title": "Create Your Account — EVARA-LUX",
+    "description": "Create your EVARA-LUX account with a one-time email code. No password required."
+  },
+  "/account": {
+    "title": "Your Account — EVARA-LUX",
+    "description": "Your EVARA-LUX card, house tier, NEXA Points and NEXA Coins."
+  },
+  "/catalog": {
+    "title": "Shop — EVARA-LUX",
+    "description": "Browse the EVARA-LUX collection by category."
+  },
+  "/feed": {
+    "title": "Feed — EVARA-LUX",
+    "description": "Posts and comments from the EVARA-LUX house."
+  },
+  "/legal/privacy": {
+    "title": "Privacy Policy — EVARA-LUX",
+    "description": "How EVARA-LUX collects, uses and protects your personal data."
+  },
+  "/legal/terms": {
+    "title": "Terms of Service — EVARA-LUX",
+    "description": "The terms that govern your use of EVARA-LUX."
+  },
+  "/legal/refund": {
+    "title": "Refund & Return Policy — EVARA-LUX",
+    "description": "Return windows, conditions and how refunds are issued."
+  },
+  "/legal/cookies": {
+    "title": "Cookie Policy — EVARA-LUX",
+    "description": "The cookies EVARA-LUX uses and how to manage your choice."
+  },
+  "default": {
+    "title": "EVARA-LUX",
+    "description": "EVARA-LUX is a premium, AI-native commerce experience."
+  }
+}
