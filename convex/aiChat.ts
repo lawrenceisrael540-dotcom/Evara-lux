@@ -2,8 +2,8 @@ import { action, internalMutation, internalQuery, mutation, query } from "./_gen
 import { v } from "convex/values"
 import { getAuthUserId } from "@convex-dev/auth/server"
 import { api, internal } from "./_generated/api"
-import { callMacalyJson } from "./macaly"
-import { getMembershipTier, membershipTierLabel } from "./membershipLib"
+import { callAiJson } from "./aiProvider"
+import { getMembershipTier, membershipTierLabel, membershipTierRank } from "./membershipLib"
 
 const toolDefs = [
   {
@@ -156,6 +156,29 @@ export const searchBrands = internalQuery({
   },
 })
 
+export const startRun = internalMutation({
+  args: { traceId: v.string(), userId: v.id("users"), task: v.string() },
+  returns: v.id("aiRuns"),
+  handler: async (ctx, args) => {
+    await ctx.db.insert("traceEvents", { traceId: args.traceId, userId: args.userId, kind: "ai.request", status: "started", metadata: { task: args.task } })
+    return ctx.db.insert("aiRuns", {
+      traceId: args.traceId, userId: args.userId, agent: "evara-intelligence",
+      task: args.task, status: "running", inputSummary: "member message", startedAt: Date.now(),
+    })
+  },
+})
+
+export const finishRun = internalMutation({
+  args: { runId: v.id("aiRuns"), traceId: v.string(), userId: v.id("users"),
+    status: v.union(v.literal("completed"), v.literal("failed")), model: v.optional(v.string()), outputSummary: v.optional(v.string()) },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.runId, { status: args.status, model: args.model, outputSummary: args.outputSummary, completedAt: Date.now() })
+    await ctx.db.insert("traceEvents", { traceId: args.traceId, userId: args.userId, kind: "ai.request", status: args.status === "completed" ? "completed" : "failed", metadata: { model: args.model } })
+    return null
+  },
+})
+
 export const sendMessage = action({
   args: { threadId: v.id("aiThreads"), message: v.string() },
   returns: v.object({ ok: v.boolean(), answer: v.optional(v.string()), message: v.optional(v.string()) }),
@@ -182,14 +205,22 @@ Member interests/taste: ${JSON.stringify(context.taste ?? {})}.`
       ...context.messages.map((m: any) => ({ role: m.role, content: m.content })),
     ]
 
-    let response = await callMacalyJson("/api/client-app/llm-usage", {
-      preset: "REASONING",
-      temperature: 0.35,
-      maxTokens: 900,
-      messages,
-      tools: toolDefs,
-      toolChoice: "auto",
+    const tierRank = membershipTierRank(context.membership?.tier)
+    const traceId = crypto.randomUUID()
+    const runId = await ctx.runMutation(internal.aiChat.startRun, {
+      traceId, userId, task: context.thread.mode,
     })
+
+    let response
+    try {
+      response = await callAiJson({ rank: tierRank, temperature: 0.35, maxTokens: 900, messages, tools: toolDefs })
+    } catch (error) {
+      await ctx.runMutation(internal.aiChat.finishRun, {
+        runId, traceId, userId, status: "failed",
+        outputSummary: error instanceof Error ? error.message.slice(0, 200) : "provider failure",
+      })
+      throw error
+    }
 
     for (let step = 0; step < 2 && response.finishReason === "tool-calls"; step++) {
       const calls = Array.isArray(response.toolCalls) ? response.toolCalls : []
@@ -206,18 +237,14 @@ Member interests/taste: ${JSON.stringify(context.taste ?? {})}.`
       }
       messages.push({ role: "assistant", content: calls.map((call: any) => ({ type: "tool-call", toolCallId: call.toolCallId, toolName: call.toolName, input: call.input })) })
       messages.push({ role: "tool", content: toolResults })
-      response = await callMacalyJson("/api/client-app/llm-usage", {
-        preset: "REASONING",
-        temperature: 0.35,
-        maxTokens: 900,
-        messages,
-        tools: toolDefs,
-        toolChoice: "auto",
-      })
+      response = await callAiJson({ rank: tierRank, temperature: 0.35, maxTokens: 900, messages, tools: toolDefs })
     }
 
     const answer = String(response.text ?? "I couldn't complete that request right now.")
-    await ctx.runMutation(internal.aiChat.saveAssistant, { threadId, userId, content: answer, model: "EVARA-REASONING" })
+    await ctx.runMutation(internal.aiChat.saveAssistant, { threadId, userId, content: answer, model: response.model ?? "configured-ai-model" })
+    await ctx.runMutation(internal.aiChat.finishRun, {
+      runId, traceId, userId, status: "completed", model: response.model, outputSummary: answer.slice(0, 300),
+    })
     return { ok: true, answer }
   },
 })
