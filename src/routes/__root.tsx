@@ -1,11 +1,10 @@
 import {
   HeadContent,
-  Link,
   Outlet,
   Scripts,
   createRootRoute,
 } from "@tanstack/react-router"
-import { ConvexAuthProvider } from "../components/convex-client-provider"
+import ConvexAuthProvider from "../components/convex-client-provider"
 import { Navbar } from "../components/home/Navbar"
 import { Footer } from "../components/home/Footer"
 import { ErrorBoundary } from "../components/error-boundary"
