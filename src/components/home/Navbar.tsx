@@ -11,6 +11,7 @@ import { formatMoney } from '@/lib/utils'
 type RoutePath =
   | '/'
   | '/catalog'
+  | '/command'
   | '/feed'
   | '/dashboard/ai'
   | '/dashboard/social'
@@ -23,6 +24,7 @@ type NavLink = { label: string; to: RoutePath } | { label: string; href: string 
 
 const DESKTOP_LINKS: NavLink[] = [
   { label: 'Home', to: '/' },
+  { label: 'Command', to: '/command' },
   { label: 'New Arrivals', href: '#featured-collection' },
   { label: 'Shop', to: '/catalog' },
   { label: 'Social', to: '/dashboard/social' },
@@ -33,6 +35,7 @@ const DESKTOP_LINKS: NavLink[] = [
 
 const MOBILE_LINKS: NavLink[] = [
   { label: 'Home', to: '/' },
+  { label: 'Command', to: '/command' },
   { label: 'New Arrivals', href: '#featured-collection' },
   { label: 'Shop', to: '/catalog' },
   { label: 'Social', to: '/dashboard/social' },
