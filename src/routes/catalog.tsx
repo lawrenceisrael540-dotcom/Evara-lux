@@ -2,9 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { formatMoney } from "../lib/utils"
+import { z } from "zod"
 import { ShoppingBag } from "lucide-react"
 
-export const Route = createFileRoute("/catalog")({ component: CatalogPage })
+export const Route = createFileRoute("/catalog")({ validateSearch: z.object({ category: z.string().optional() }), component: CatalogPage })
 
 function CatalogPage() {
   const products = useQuery(api.products.listFeatured, { limit: 50 })
