@@ -1,0 +1,2 @@
+import { createFileRoute } from "@tanstack/react-router"
+export const Route = createFileRoute("/banking")({ component: () => <section className="mx-auto max-w-5xl px-5 py-16"><p className="text-[10px] uppercase tracking-[.22em] text-accent">EVARA·LUX / BANKING</p><h1 className="mt-2 font-display text-5xl">Wallet.</h1><p className="mt-4 text-sm text-muted-foreground">Wallet and NEXA ledger services remain server-backed. This surface does not pretend to be a bank or expose unsupported financial capabilities.</p></section> })
