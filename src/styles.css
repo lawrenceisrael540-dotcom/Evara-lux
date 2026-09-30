@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@import "../packages/design/src/design/base.css";
+
+:root {
+  --background: #0a0a0b;
+  --foreground: #f4f1ea;
+  --card: #111113;
+  --muted: #1a1a1d;
+  --muted-foreground: #98969a;
+  --border: #29292d;
+  --accent: #d8b56a;
+  --aura-accent: var(--accent);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--background); }
+body { margin: 0; background: var(--background); color: var(--foreground); font-family: ui-sans-serif, system-ui, sans-serif; }
+.font-display { font-family: Georgia, "Times New Roman", serif; }
+.bg-background { background-color: var(--background); }
+.bg-card { background-color: var(--card); }
+.bg-muted { background-color: var(--muted); }
+.text-foreground { color: var(--foreground); }
+.text-muted-foreground { color: var(--muted-foreground); }
+.text-accent { color: var(--accent); }
+.border-border { border-color: var(--border); }
+.bg-accent { background-color: var(--accent); }
+.text-background { color: var(--background); }
