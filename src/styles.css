@@ -1,3 +1,4 @@
+@import "../packages/design/src/design/base.css";
 @import "tailwindcss";
 
 @theme inline {
@@ -9,7 +10,6 @@
   --color-border: var(--border);
   --color-accent: var(--accent);
 }
-@import "../packages/design/src/design/base.css";
 
 :root {
   --background: #0a0a0b;
