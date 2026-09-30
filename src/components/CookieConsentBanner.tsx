@@ -33,8 +33,10 @@ export function CookieConsentBanner() {
   function choose(choice: 'accepted' | 'declined') {
     localStorage.setItem(STORAGE_KEY, choice)
     setVisible(false)
-    if (isAuthenticated) {
-      void recordConsent({ kind: 'cookie_consent', version: choice }).catch(() => {})
+    if (isAuthenticated && choice === 'accepted') {
+      // The server owns the canonical policy version; this records acceptance of
+      // the current policy instead of incorrectly storing "accepted" as a version.
+      void recordConsent({ kind: 'cookie_consent' }).catch(() => {})
     }
   }
 
