@@ -1,0 +1,2 @@
+import { createFileRoute } from "@tanstack/react-router"
+export const Route = createFileRoute("/brands")({ component: () => <section className="mx-auto max-w-5xl px-5 py-16"><p className="text-[10px] uppercase tracking-[.22em] text-accent">EVARA·LUX / BRAND NETWORK</p><h1 className="mt-2 font-display text-5xl">Brands.</h1><p className="mt-4 text-sm text-muted-foreground">Partner brands are served from the commerce backend and can be surfaced here as the network UI expands.</p></section> })
