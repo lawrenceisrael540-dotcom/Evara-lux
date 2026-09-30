@@ -131,7 +131,11 @@ export const addItem = mutation({
       .unique()
 
     if (existing) {
-      await ctx.db.patch(existing._id, { quantity: existing.quantity + quantity, unitPriceMinor: price })
+      const nextQuantity = existing.quantity + quantity
+      if (nextQuantity > stock) {
+        return { ok: false as const, code: "OUT_OF_STOCK", message: "Not enough stock available for the requested quantity." }
+      }
+      await ctx.db.patch(existing._id, { quantity: nextQuantity, unitPriceMinor: price })
     } else {
       await ctx.db.insert("cartItems", { cartId, productId, variantId, quantity, unitPriceMinor: price })
     }
@@ -159,6 +163,15 @@ export const setQuantity = mutation({
     if (quantity <= 0) {
       await ctx.db.delete(cartItemId)
     } else {
+      const product = await ctx.db.get(item.productId)
+      if (!product || product.status !== "active") return { ok: false as const, code: "NOT_AVAILABLE", message: "Product is no longer available." }
+      let stock = product.stockQuantity
+      if (item.variantId) {
+        const variant = await ctx.db.get(item.variantId)
+        if (!variant || variant.productId !== item.productId) return { ok: false as const, code: "NOT_AVAILABLE", message: "Variant is no longer available." }
+        stock = variant.stockQuantity
+      }
+      if (quantity > stock) return { ok: false as const, code: "OUT_OF_STOCK", message: "Not enough stock available." }
       await ctx.db.patch(cartItemId, { quantity })
     }
     return { ok: true as const }
