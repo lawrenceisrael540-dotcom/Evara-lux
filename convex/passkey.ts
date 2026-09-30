@@ -6,7 +6,15 @@ import { generateRegistrationOptions, verifyRegistrationResponse } from "@simple
 
 const opts=v.object({rpId:v.string(),origin:v.string()})
 
-function allowedOrigin(origin:string){try{const u=new URL(origin);return u.protocol==="https:"&&(u.hostname.endsWith(".macaly.dev")||u.hostname.endsWith(".macaly.app")||u.hostname.endsWith(".vercel.app")||u.hostname==="localhost")}catch{return false}}
+function allowedOrigin(origin:string){
+  try{
+    const u=new URL(origin)
+    if(u.protocol==="http:"&&u.hostname!=="localhost") return false
+    if(u.hostname==="localhost") return true
+    const configured=(process.env.APP_ALLOWED_ORIGINS??"").split(",").map(x=>x.trim().replace(/\/$/,"")).filter(Boolean)
+    return configured.includes(u.origin)
+  }catch{return false}
+}
 
 export const getMine=query({args:{},returns:v.array(v.object({id:v.id("passkeyCredentials"),name:v.string(),createdAt:v.number(),lastUsedAt:v.optional(v.number()),deviceType:v.optional(v.string()),backedUp:v.optional(v.boolean())})),handler:async(ctx)=>{const u=await getAuthUserId(ctx);if(!u)return[];return ctx.db.query("passkeyCredentials").withIndex("by_user",q=>q.eq("userId",u)).order("desc").take(20).then(rows=>rows.map(x=>({id:x._id,name:x.name,createdAt:x.createdAt,lastUsedAt:x.lastUsedAt,deviceType:x.deviceType,backedUp:x.backedUp})))}})
 
