@@ -62,6 +62,13 @@ export const createFeedItem = mutation({
     if (!userId) return { ok: false as const, message: "Sign in required." }
     if (!args.body.trim() || args.body.length > 5000) return { ok: false as const, message: "Post must be 1–5000 characters." }
     const profile = await ctx.db.query("userProfiles").withIndex("by_user", q => q.eq("userId", userId)).unique()
+    const membership = await ctx.db.query("membershipProfiles").withIndex("by_user", q => q.eq("userId", userId)).unique()
+    const tier = membership?.tier ?? "obsidian"
+    const exclusionLimit = ["sovereign","sovereign_gilded","apex_imperial","sovereign_aethel"].includes(tier) ? 50 : 10
+    const requestedExclusions = (args.excludedUserIds ?? []).length + (args.excludedUsernames ?? []).filter(Boolean).length
+    if (requestedExclusions > exclusionLimit) return { ok: false as const, message: "HIDE_FROM_LIMIT_EXCEEDED" }
+    if (args.excludedUserIds?.some(id => String(id) === String(userId))) return { ok: false as const, message: "You cannot hide a post from yourself." }
+
     const id = await ctx.db.insert("feedItems", {
       authorId: userId,
       authorUsername: profile?.username,
@@ -72,10 +79,6 @@ export const createFeedItem = mutation({
       diversityKey: args.regionBucket ? `region:${args.regionBucket}` : "global",
     })
     const excludedIds = new Set<string>()
-    const membership = await ctx.db.query("membershipProfiles").withIndex("by_user", q => q.eq("userId", userId)).unique()
-    const tier = membership?.tier ?? "obsidian"
-    const exclusionLimit = ["sovereign","sovereign_gilded","apex_imperial","sovereign_aethel"].includes(tier) ? 50 : 10
-    if ((args.excludedUserIds ?? []).length > exclusionLimit) throw new Error("HIDE_FROM_LIMIT_EXCEEDED")
     if (tier !== "obsidian") await ctx.db.insert("sovereignPrivilegeAudit", { userId, tier, action: "used", feature: "post_exclusions", metadata: { count: (args.excludedUserIds ?? []).length }, createdAt: Date.now() })
     for (const excludedUserId of args.excludedUserIds ?? []) {
       excludedIds.add(String(excludedUserId))
