@@ -1,40 +1,52 @@
-import { Email } from "@convex-dev/auth/providers/Email";
+import { Email } from "@convex-dev/auth/providers/Email"
 
 function generateOTP(length: number): string {
-  const digits = "0123456789";
-  const array = new Uint32Array(length);
-  crypto.getRandomValues(array);
-  return Array.from(array, (num) => digits[num % digits.length]).join("");
+  const digits = "0123456789"
+  const array = new Uint32Array(length)
+  crypto.getRandomValues(array)
+  return Array.from(array, (num) => digits[num % digits.length]).join("")
+}
+
+async function sendResendEmail(to: string, subject: string, html: string) {
+  const apiKey = process.env.RESEND_API_KEY
+  const from = process.env.RESEND_FROM_EMAIL
+  if (!apiKey || !from) throw new Error("RESEND_NOT_CONFIGURED")
+
+  const fromName = process.env.RESEND_FROM_NAME?.trim()
+  const sender = fromName ? `${fromName} <${from}>` : from
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({ from: sender, to: [to], subject, html }),
+  })
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "")
+    throw new Error(`RESEND_SEND_FAILED:${response.status}:${detail.slice(0, 200)}`)
+  }
+}
+
+function verificationHtml(token: string, purpose: string) {
+  return `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:32px;color:#111">
+    <h1 style="font-size:22px">EVARA-LUX</h1>
+    <p>Your ${purpose} verification code is:</p>
+    <p style="font-size:32px;font-weight:700;letter-spacing:8px">${token}</p>
+    <p>This code expires in 15 minutes. If you did not request it, you can ignore this email.</p>
+  </div>`
 }
 
 export const ResendOTP = Email({
   id: "resend-otp",
   maxAge: 60 * 15,
   async generateVerificationToken() {
-    return generateOTP(6);
+    return generateOTP(6)
   },
   async sendVerificationRequest({ identifier: email, token }) {
-    const response = await fetch(`${process.env.OTP_ENDPOINT}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        token,
-        chatId: process.env.CHAT_ID,
-        appName: `${process.env.APP_NAME}` || "My App",
-        secretKey: process.env.SECRET_KEY,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "Failed to send verification email");
-    }
+    await sendResendEmail(email, "Your EVARA-LUX verification code", verificationHtml(token, "account"))
   },
-});
-
+})
 
 export const PasswordResetEmail = Email({
   id: "password-reset",
@@ -43,18 +55,6 @@ export const PasswordResetEmail = Email({
     return generateOTP(6)
   },
   async sendVerificationRequest({ identifier: email, token }) {
-    const response = await fetch(process.env.OTP_ENDPOINT!, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-        token,
-        chatId: process.env.CHAT_ID,
-        appName: process.env.APP_NAME || "EVARA-LUX",
-        secretKey: process.env.SECRET_KEY,
-        purpose: "password-reset",
-      }),
-    })
-    if (!response.ok) throw new Error("Could not send the password reset code.")
+    await sendResendEmail(email, "Reset your EVARA-LUX password", verificationHtml(token, "password reset"))
   },
 })
