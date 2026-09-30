@@ -19,6 +19,42 @@ function requiredEnv(name: string): string {
   return value
 }
 
+function normalizeMessages(messages: ChatMessage[]) {
+  const out: any[] = []
+  for (const message of messages) {
+    if (message.role === "assistant" && Array.isArray(message.content)) {
+      const calls = (message.content as any[]).filter((part) => part?.type === "tool-call")
+      if (calls.length) {
+        out.push({
+          role: "assistant",
+          content: null,
+          tool_calls: calls.map((call) => ({
+            id: String(call.toolCallId),
+            type: "function",
+            function: {
+              name: String(call.toolName),
+              arguments: JSON.stringify(call.input ?? {}),
+            },
+          })),
+        })
+        continue
+      }
+    }
+    if (message.role === "tool" && Array.isArray(message.content)) {
+      for (const result of message.content as any[]) {
+        out.push({
+          role: "tool",
+          tool_call_id: String(result.toolCallId),
+          content: JSON.stringify(result.output ?? null),
+        })
+      }
+      continue
+    }
+    out.push({ role: message.role, content: message.content })
+  }
+  return out
+}
+
 function modelFor(rank: number): string {
   const premium = process.env.AI_PREMIUM_MODEL?.trim()
   const standard = process.env.AI_DEFAULT_MODEL?.trim()
@@ -54,7 +90,7 @@ export async function callAiJson(args: {
     },
     body: JSON.stringify({
       model,
-      messages: args.messages,
+      messages: normalizeMessages(args.messages),
       temperature: args.temperature,
       max_tokens: args.maxTokens,
       tools: args.tools.map((tool) => ({
