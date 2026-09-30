@@ -3,7 +3,7 @@ import { v } from "convex/values"
 import { getAuthUserId } from "@convex-dev/auth/server"
 import { api, internal } from "./_generated/api"
 import { callMacalyJson } from "./macaly"
-import { getMembershipTier } from "./membershipLib"
+import { getMembershipTier, membershipTierLabel } from "./membershipLib"
 
 const toolDefs = [
   {
@@ -174,7 +174,7 @@ Location is coarse and consent-based only.
 Explain recommendations when useful. For purchases, never say payment succeeded unless the backend confirms it.
 Use concise but high-value responses and offer concrete next actions.
 Current mode: ${context.thread.mode}.
-Member tier: ${context.membership?.tier ?? "obsidian"}.
+Member tier: ${membershipTierLabel(context.membership?.tier)}.
 Member interests/taste: ${JSON.stringify(context.taste ?? {})}.`
 
     const messages: any[] = [
