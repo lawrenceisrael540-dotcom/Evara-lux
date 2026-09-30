@@ -1,4 +1,3 @@
-@import "../packages/design/src/design/base.css";
 @import "tailwindcss";
 
 @theme inline {
@@ -20,8 +19,48 @@
   --border: #29292d;
   --accent: #d8b56a;
   --aura-accent: var(--accent);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+  --radius-sm: 4px;
+  --radius-md: 10px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --type-base: 1.0625rem;
+  --type-ratio: 1.25;
+  --measure-body: 64ch;
+  --touch-min: 44px;
+  --focus-width: 2px;
+  --focus-offset: 3px;
   color-scheme: dark;
 }
+
+:focus-visible {
+  outline: var(--focus-width) solid var(--aura-accent);
+  outline-offset: var(--focus-offset);
+}
+
+button, [role="button"], a.action {
+  min-block-size: var(--touch-min);
+  min-inline-size: var(--touch-min);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 120ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 * { box-sizing: border-box; }
 html { background: var(--background); }
 body { margin: 0; background: var(--background); color: var(--foreground); font-family: ui-sans-serif, system-ui, sans-serif; }
