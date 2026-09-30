@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router"
+export const Route = createFileRoute("/messages")({ component: MessagesPage })
+function MessagesPage(){return <section className="mx-auto max-w-3xl px-5 py-16"><p className="text-[10px] uppercase tracking-[.22em] text-accent">EVARA·LUX / MESSAGES</p><h1 className="mt-2 font-display text-5xl">Private conversations.</h1><p className="mt-4 text-sm leading-7 text-muted-foreground">The messaging destination is reserved here so Social navigation has a real route. Message encryption and delivery are not claimed until their backend is implemented.</p></section>}
