@@ -17,17 +17,21 @@ export const markRead=mutation({args:{notificationId:v.id("notifications")},retu
 export const markAllRead=mutation({args:{},returns:v.number(),handler:async(ctx)=>{const u=await getAuthUserId(ctx);if(!u)return 0;const rows=(await ctx.db.query("notifications").withIndex("by_user_created",q=>q.eq("userId",u)).order("desc").take(100)).filter(n=>n.readAt===undefined);for(const n of rows)await ctx.db.patch(n._id,{readAt:Date.now()});return rows.length}})
 export const getDeliveryContext=internalQuery({args:{userId:v.id("users")},returns:v.object({email:v.union(v.string(),v.null()),phone:v.union(v.string(),v.null()),emailEnabled:v.boolean(),pushEnabled:v.boolean(),phoneVerified:v.boolean()}),handler:async(ctx,{userId})=>{const user=await ctx.db.get(userId);const p=await ctx.db.query("userProfiles").withIndex("by_user",q=>q.eq("userId",userId)).unique();const prefs=await ctx.db.query("notificationPreferences").withIndex("by_user",q=>q.eq("userId",userId)).unique();const kindEnabled=(kind:string)=>prefs?Boolean((prefs as any)[kind==="promotion"?"promotions":kind]??true):true;return{email:(user as any)?.email??null,phone:p?.phone??null,emailEnabled:kindEnabled("system")&&(prefs?.email??false),pushEnabled:prefs?.push??true,phoneVerified:p?.phone!==undefined&&p?.verificationStatus==="verified"}}})
 
-export const deliver=internalAction({args:{userId:v.id("users"),kind:v.union(v.literal("order"),v.literal("payment"),v.literal("social"),v.literal("security"),v.literal("promotion"),v.literal("system"),v.literal("creator"),v.literal("support")),title:v.string(),body:v.string(),actionUrl:v.optional(v.string())},returns:v.object({email:v.boolean(),sms:v.boolean()}),handler:async(ctx,a)=>{const c=await ctx.runQuery(internal.notifications.getDeliveryContext,{userId:a.userId});let email=false;let sms=false;const emailEndpoint=process.env.EMAIL_NOTIFICATION_ENDPOINT;const smsEndpoint=process.env.SMS_NOTIFICATION_ENDPOINT;
-  // Promotional emails get an unsubscribe link appended to the body and a
-  // manage-preferences link as the action URL, so the required opt-out is
-  // in the email itself, not only in account settings the recipient has to
-  // go find. Transactional mail (order/payment/security/support) isn't
-  // marketing and keeps its own actionUrl untouched.
-  const isPromotional=a.kind==="promotion"
-  const appUrl=process.env.APP_URL??"https://evara-lux.app"
-  const unsubscribeUrl=isPromotional?`${appUrl}/unsubscribe?u=${a.userId}`:undefined
-  const deliveredBody=isPromotional?`${a.body}\n\nManage or unsubscribe from promotional emails: ${unsubscribeUrl}`:a.body
-  const deliveredActionUrl=isPromotional?(a.actionUrl??`${appUrl}/settings`):a.actionUrl
-  if(c.email&&c.emailEnabled&&emailEndpoint){const r=await fetch(emailEndpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:c.email,subject:a.title,body:deliveredBody,actionUrl:deliveredActionUrl,unsubscribeUrl,appName:process.env.APP_NAME??"EVARA-LUX",secretKey:process.env.EMAIL_NOTIFICATION_SECRET_KEY})});email=r.ok}if(c.phone&&c.phoneVerified&&smsEndpoint&&["security","order","payment","support"].includes(a.kind)){const r=await fetch(smsEndpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone:c.phone,title:a.title,message:a.body,appName:process.env.APP_NAME??"EVARA-LUX",secretKey:process.env.SMS_NOTIFICATION_SECRET_KEY})});sms=r.ok}return{email,sms}}})
+export const deliver=internalAction({args:{userId:v.id("users"),kind:v.union(v.literal("order"),v.literal("payment"),v.literal("social"),v.literal("security"),v.literal("promotion"),v.literal("system"),v.literal("creator"),v.literal("support")),title:v.string(),body:v.string(),actionUrl:v.optional(v.string())},returns:v.object({email:v.boolean(),sms:v.boolean()}),handler:async(ctx,a)=>{const c=await ctx.runQuery(internal.notifications.getDeliveryContext,{userId:a.userId});let email=false;let sms=false;const resendKey=process.env.RESEND_API_KEY
+  const resendFrom=process.env.RESEND_FROM_EMAIL
+  const resendFromName=process.env.RESEND_FROM_NAME?.trim()
+  const sender=resendFromName&&resendFrom ? `${resendFromName} <${resendFrom}>` : resendFrom
+  const emailEndpoint=process.env.EMAIL_NOTIFICATION_ENDPOINT
+  if(c.email&&c.emailEnabled&&resendKey&&sender){
+    const safeBody=deliveredBody.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    const action=deliveredActionUrl?`<p><a href="${deliveredActionUrl}">Open EVARA-LUX</a></p>`:""
+    const r=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${resendKey}`},body:JSON.stringify({from:sender,to:[c.email],subject:a.title,html:`<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;padding:24px"><h2>${a.title}</h2><p style="white-space:pre-wrap">${safeBody}</p>${action}</div>`})})
+    email=r.ok
+  }else if(c.email&&c.emailEnabled&&emailEndpoint){
+    const r=await fetch(emailEndpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:c.email,subject:a.title,body:deliveredBody,actionUrl:deliveredActionUrl,unsubscribeUrl,appName:process.env.APP_NAME??"EVARA-LUX",secretKey:process.env.EMAIL_NOTIFICATION_SECRET_KEY})})
+    email=r.ok
+  }
+  if(c.phone&&c.phoneVerified&&smsEndpoint&&["security","order","payment","support"].includes(a.kind)){const r=await fetch(smsEndpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone:c.phone,title:a.title,message:a.body,appName:process.env.APP_NAME??"EVARA-LUX",secretKey:process.env.SMS_NOTIFICATION_SECRET_KEY})});sms=r.ok}
+  return{email,sms}}})
 
 export const createInternal=internalMutation({args:{userId:v.id("users"),kind:v.union(v.literal("order"),v.literal("payment"),v.literal("social"),v.literal("security"),v.literal("promotion"),v.literal("system"),v.literal("creator"),v.literal("support")),title:v.string(),body:v.string(),actionUrl:v.optional(v.string()),priority:v.union(v.literal("low"),v.literal("normal"),v.literal("high"))},returns:v.id("notifications"),handler:async(ctx,a)=>{const id=await ctx.db.insert("notifications",{...a,createdAt:Date.now()});await ctx.scheduler.runAfter(0,internal.notifications.deliver,{userId:a.userId,kind:a.kind,title:a.title,body:a.body,actionUrl:a.actionUrl});return id}})
