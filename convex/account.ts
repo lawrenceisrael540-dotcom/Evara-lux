@@ -2,7 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server"
 import { v } from "convex/values"
 import { mutation, query, type MutationCtx } from "./_generated/server"
 import { newTraceId } from "./trace"
-import { getMembershipTier } from "./membershipLib"
+import { getMembershipTier, membershipTierLabel } from "./membershipLib"
 
 // This is a *loyalty rewards ladder* — driven by lifetime spend, stored on loyaltyAccounts.tier —
 // and is a separate concept from membership tier (obsidian/sovereign/sovereign_gilded/
@@ -187,7 +187,7 @@ export const getMySnapshot = query({
       displayName: profile.displayName ?? null,
       username: profile.username ?? null,
       level: profile.level ?? 1,
-      tier: membership.tier,
+      tier: membershipTierLabel(membership.tier),
       verificationStatus: profile.verificationStatus ?? "verified",
       emailVerified: profile.emailVerified ?? true,
       twoFactorEnabled: security?.twoFactorEnabled ?? profile.twoFactorEnabled ?? false,
