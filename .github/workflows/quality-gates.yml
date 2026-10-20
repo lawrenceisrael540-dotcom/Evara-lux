@@ -1,0 +1,51 @@
+name: EVARA-LUX quality gates
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "codex/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Typecheck, build, and design verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck all workspaces
+        run: npm run typecheck
+
+      - name: Build all workspaces
+        run: npm run build
+
+      - name: Verify design system
+        run: npm run design:verify
+
+      - name: Check for accidentally committed environment files
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -E '(^|/)\.env($|\.)|(^|/)\.env\.[^/]+$' | grep -v -E '(^|/)\.env\.example$|(^|/)\.env\.template$'; then
+            echo "::error::Tracked environment file detected. Remove it and rotate any exposed credentials."
+            exit 1
+          fi
